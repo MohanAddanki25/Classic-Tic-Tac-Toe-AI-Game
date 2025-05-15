@@ -188,7 +188,6 @@
     <div class="mode-selection" id="modeSelection">
       <h1>Classic Tic-Tac-Toe</h1>
       <button class="mode-button" onclick="selectMode('friend')">Friend and You</button>
-      <button class="mode-button" onclick="showDifficultySelection()">You vs AI</button>
       <div id="difficultySelection" class="hidden">
         <button class="difficulty-button" onclick="startGame('ai', 'easy')">Easy AI</button>
         <button class="difficulty-button" onclick="startGame('ai', 'hard')">Hard AI</button>
@@ -229,6 +228,7 @@
 
     const clickSound = new Audio('mixkit-unlock-game-notification-253.wav');
     const winSound = new Audio('mixkit-video-game-win-2016.wav');
+    const drawSound = new Audio('mixkit-wrong-answer-fail-notification-946.wav');
 
     const winningCombinations = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -322,6 +322,7 @@
       if (gameBoard.every(cell => cell !== '')) {
         document.getElementById('status').textContent = "It's a draw!";
         scores.Draws++;
+        if (soundEnabled) drawSound.play(); // Play draw sound
         gameActive = false;
         updateScore();
         return;
