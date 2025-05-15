@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classic Tic-Tac-Toe</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #000;
+      color: #fff;
+      overflow: auto;
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(20, 20, 20, 0.9);
+      padding: 2rem;
+      border-radius: 15px;
+      border: 3px solid #00ffea;
+      box-shadow: 0 0 25px #00ffea, 0 0 50px #ff00ff;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      color: #00ffea;
+      text-shadow: 0 0 15px #00ffea;
+    }
+
+    .status {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: #ff00ff;
+      text-shadow: 0 0 8px #ff00ff;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 90px);
+      grid-gap: 8px;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .cell {
+      width: 90px;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid #00ffea;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.3rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 10px currentColor;
+    }
+
+    .cell:hover {
+      background: rgba(0, 255, 234, 0.2);
+      box-shadow: 0 0 15px #00ffea;
+      transform: scale(1.05);
+    }
+
+    .cell.x {
+      color: #ff007a;
+      animation: neonGlow 0.4s ease;
+    }
+
+    .cell.o {
+      color: #00ffea;
+      animation: neonGlow 0.4s ease;
+    }
+
+    .cell.winning {
+      background: rgba(255, 215, 0, 0.3);
+      border-color: #ffd700;
+      box-shadow: 0 0 20px #ffd700;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes neonGlow {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .mode-selection, .game {
+      transition: opacity 0.5s ease;
+    }
+
+    .mode-selection.hidden, .game.hidden {
+      opacity: 0;
+      display: none;
+    }
+
+    .score {
+      margin: 1rem 0;
+      font-size: 1rem;
+      color: #00ffea;
+      text-shadow: 0 0 5px #00ffea;
+    }
+
+    .history-panel {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(0, 255, 234, 0.1);
+      border-radius: 8px;
+      max-height: 100px;
+      overflow-y: auto;
+      color: #ff00ff;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .history-panel.visible {
+      display: block;
+    }
+
+    button {
+      margin: 0.5rem;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      background: none;
+      border: 2px solid #ff00ff;
+      color: #ff00ff;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 5px #ff00ff;
+    }
+
+    button:hover {
+      background: #ff00ff;
+      color: #fff;
+      box-shadow: 0 0 15px #ff00ff;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .mode-button, .difficulty-button {
+      width: 200px;
+      margin: 0.5rem auto;
+    }
+
+    @media (max-width: 400px) {
+      .container {
+        padding: 1.5rem;
+      }
+      .board {
+        grid-template-columns: repeat(3, 70px);
+      }
+      .cell {
+        width: 70px;
+        height: 70px;
+        font-size: 1.8rem;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="mode-selection" id="modeSelection">
+      <h1>Classic Tic-Tac-Toe</h1>
+      <button class="mode-button" onclick="selectMode('friend')">Friend and You</button>
+      <button class="mode-button" onclick="showDifficultySelection()">You vs AI</button>
+      <div id="difficultySelection" class="hidden">
+        <button class="difficulty-button" onclick="startGame('ai', 'easy')">Easy AI</button>
+        <button class="difficulty-button" onclick="startGame('ai', 'hard')">Hard AI</button>
+      </div>
+    </div>
+    <div class="game hidden" id="game">
+      <h1>Classic Tic-Tac-Toe</h1>
+      <div class="status" id="status">Player X's turn</div>
+      <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+      </div>
+      <div class="score" id="score">X: 0 | O: 0 | Draws: 0</div>
+      <div class="history-panel" id="history"></div>
+      <button onclick="toggleSound()">Mute Sound</button>
+      <button onclick="toggleHistory()">Show History</button>
+      <button onclick="resetGame()">Reset Game</button>
+      <button onclick="backToMenu()">Back to Menu</button>
+    </div>
+  </div>
+
+  <script>
+    let currentPlayer = 'X';
+    let gameBoard = ['', '', '', '', '', '', '', '', ''];
+    let gameActive = true;
+    let gameMode = null;
+    let aiDifficulty = 'hard';
+    let scores = { X: 0, O: 0, Draws: 0 };
+    let moveHistory = [];
+    let soundEnabled = true;
+
+    const clickSound = new Audio('C:/Soundwave/Project1/mixkit-unlock-game-notification-253.wav');
+    const winSound = new Audio('C:/Soundwave/Project1/mixkit-video-game-win-2016.wav');
+
+    const winningCombinations = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    function selectMode(mode) {
+      gameMode = mode;
+      document.getElementById('modeSelection').classList.add('hidden');
+      document.getElementById('game').classList.remove('hidden');
+      resetGame();
+    }
+
+    function showDifficultySelection() {
+      document.getElementById('difficultySelection').classList.remove('hidden');
+    }
+
+    function startGame(mode, difficulty) {
+      gameMode = mode;
+      aiDifficulty = difficulty || 'hard';
+      document.getElementById('modeSelection').classList.add('hidden');
+      document.getElementById('difficultySelection').classList.add('hidden');
+      document.getElementById('game').classList.remove('hidden');
+      resetGame();
+    }
+
+    function backToMenu() {
+      document.getElementById('game').classList.add('hidden');
+      document.getElementById('modeSelection').classList.remove('hidden');
+      document.getElementById('difficultySelection').classList.add('hidden');
+      resetGame();
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.querySelector('button[onclick="toggleSound()"]').textContent = soundEnabled ? 'Mute Sound' : 'Unmute Sound';
+    }
+
+    function toggleHistory() {
+      const historyPanel = document.getElementById('history');
+      historyPanel.classList.toggle('visible');
+      document.querySelector('button[onclick="toggleHistory()"]').textContent = historyPanel.classList.contains('visible') ? 'Hide History' : 'Show History';
+    }
+
+    document.querySelectorAll('.cell').forEach(cell => {
+      cell.addEventListener('click', handleCellClick);
+    });
+
+    function handleCellClick(e) {
+      if (!gameActive) return;
+
+      const cell = e.target;
+      const index = cell.getAttribute('data-index');
+
+      if (gameBoard[index] !== '') return;
+
+      if (gameMode === 'ai' && currentPlayer === 'O') return;
+
+      makeMove(index, currentPlayer);
+
+      if (gameMode === 'ai' && gameActive && currentPlayer === 'O') {
+        setTimeout(aiMove, 500);
+      }
+    }
+
+    function makeMove(index, player) {
+      gameBoard[index] = player;
+      const cell = document.querySelector(`.cell[data-index="${index}"]`);
+      cell.textContent = player;
+      cell.classList.add(player.toLowerCase());
+
+      moveHistory.push(`${player} placed at position ${index}`);
+      updateHistory();
+
+      if (soundEnabled) clickSound.play();
+
+      if (checkWin(player)) {
+        const winningCombo = getWinningCombination(player);
+        if (winningCombo) {
+          winningCombo.forEach(i => document.querySelector(`.cell[data-index="${i}"]`).classList.add('winning'));
+        }
+        document.getElementById('status').textContent = gameMode === 'ai' && player === 'X' ? 'You win!' : gameMode === 'ai' && player === 'O' ? 'AI wins!' : `Player ${player} wins!`;
+        scores[player]++;
+        if (soundEnabled) winSound.play();
+        gameActive = false;
+        updateScore();
+        return;
+      }
+
+      if (gameBoard.every(cell => cell !== '')) {
+        document.getElementById('status').textContent = "It's a draw!";
+        scores.Draws++;
+        gameActive = false;
+        updateScore();
+        return;
+      }
+
+      currentPlayer = player === 'X' ? 'O' : 'X';
+      document.getElementById('status').textContent = gameMode === 'ai' && currentPlayer === 'X' ? 'Your turn (X)' : gameMode === 'ai' && currentPlayer === 'O' ? 'AI thinking...' : `Player ${currentPlayer}'s turn`;
+    }
+
+    function aiMove() {
+      let move = aiDifficulty === 'easy' ? findEasyMove() : findHardMove();
+      if (move !== null) {
+        makeMove(move, 'O');
+      }
+    }
+
+    function findHardMove() {
+      // Check for AI winning move
+      for (let i = 0; i < 9; i++) {
+        if (gameBoard[i] === '') {
+          gameBoard[i] = 'O';
+          if (checkWin('O')) {
+            gameBoard[i] = '';
+            return i;
+          }
+          gameBoard[i] = '';
+        }
+      }
+
+      // Block player's winning move
+      for (let i = 0; i < 9; i++) {
+        if (gameBoard[i] === '') {
+          gameBoard[i] = 'X';
+          if (checkWin('X')) {
+            gameBoard[i] = '';
+            return i;
+          }
+          gameBoard[i] = '';
+        }
+      }
+
+      // Choose random available move
+      const availableMoves = gameBoard
+        .map((cell, index) => (cell === '' ? index : null))
+        .filter(index => index !== null);
+      return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    }
+
+    function findEasyMove() {
+      // 50% chance to make a random move
+      if (Math.random() < 0.5) {
+        const availableMoves = gameBoard
+          .map((cell, index) => (cell === '' ? index : null))
+          .filter(index => index !== null);
+        return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+      }
+      // Otherwise, use hard logic
+      return findHardMove();
+    }
+
+    function checkWin(player) {
+      return winningCombinations.some(combination => {
+        return combination.every(index => {
+          return gameBoard[index] === player;
+        });
+      });
+    }
+
+    function getWinningCombination(player) {
+      return winningCombinations.find(combination => {
+        return combination.every(index => {
+          return gameBoard[index] === player;
+        });
+      }) || null;
+    }
+
+    function updateScore() {
+      document.getElementById('score').textContent = `X: ${scores.X} | O: ${scores.O} | Draws: ${scores.Draws}`;
+    }
+
+    function updateHistory() {
+      const historyPanel = document.getElementById('history');
+      historyPanel.innerHTML = moveHistory.map((move, i) => `<div>${i + 1}. ${move}</div>`).join('');
+    }
+
+    function resetGame() {
+      currentPlayer = 'X';
+      gameBoard = ['', '', '', '', '', '', '', '', ''];
+      gameActive = true;
+      moveHistory = [];
+      updateHistory();
+      document.getElementById('status').textContent = gameMode === 'ai' ? 'Your turn (X)' : `Player ${currentPlayer}'s turn`;
+      document.querySelectorAll('.cell').forEach(cell => {
+        cell.textContent = '';
+        cell.classList.remove('x', 'o', 'winning');
+      });
+    }
+  </script>
+</body>
+</html>
